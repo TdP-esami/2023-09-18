@@ -17,8 +17,8 @@ public class testDAO {
 		List<DailySale> listS = new ArrayList<>();
 		
 		
-		listR = dao.getAllRetailers();
-		System.out.println(listR.size());
+//		listR = dao.getAllRetailers();
+//		System.out.println(listR.size());
 		
 		listP = dao.getAllProducts();
 		System.out.println(listP.size());
