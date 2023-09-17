@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -68,7 +69,9 @@
                   </Button>
                   <ComboBox fx:id="cmbNazione" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <Button fx:id="btnVolumi" mnemonicParsing="false" onAction="#doCalcolaVolumi" prefHeight="26.0" prefWidth="147.0" text="Calcola Volumi" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                  <Button fx:id="btnRicorsione" mnemonicParsing="false" onAction="#doRicorsion" prefHeight="26.0" prefWidth="147.0" text="Retailer Rappresentativi" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                  <Button fx:id="btnRicorsione" mnemonicParsing="false" onAction="#doRicorsione" prefHeight="26.0" prefWidth="147.0" text="Calcola Cammino" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                  <Label text="N" GridPane.rowIndex="2" />
+                  <TextField fx:id="txtN" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                </children>
             </GridPane>
             <TextArea fx:id="txtResult" editable="false" prefHeight="300.0" prefWidth="483.0">

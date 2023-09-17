@@ -2,8 +2,6 @@ package it.polito.tdp.gosales.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +17,7 @@ public class Model {
 	private GOsalesDAO dao;
 	private SimpleWeightedGraph<RetailersExt,DefaultWeightedEdge> grafo;
 	private Map<Integer, RetailersExt> idMap;
-	private List<RetailersExt> retailersRappresentativi;
+	private List<RetailersExt> retailersConnessi;
 	private List<RetailersExt> cammino;
 	private List<Arco> camminoArchi;
 	private int bestPesoCammino;
@@ -48,10 +46,10 @@ public class Model {
 		this.camminoArchi = new ArrayList<Arco>();
 		this.bestPesoCammino = 0;
 		
-		for (RetailersExt R : this.retailersRappresentativi) {
+		for (RetailersExt R : this.retailersConnessi) {
 			List<RetailersExt> parziale = new ArrayList<RetailersExt>();
 			parziale.add(R);
-			doRicorsione2(parziale, N, new ArrayList<Arco>());
+			doRicorsione(parziale, N, new ArrayList<Arco>());
 		}
 		return this.camminoArchi;
 	}
@@ -73,7 +71,7 @@ public class Model {
 		}
 	}
 	
-	private void doRicorsione2(List<RetailersExt> parziale, int N, List<Arco> parzialeArchi) {		
+	private void doRicorsione(List<RetailersExt> parziale, int N, List<Arco> parzialeArchi) {		
 		RetailersExt last = parziale.get(parziale.size()-1);
 		RetailersExt first = parziale.get(0);
 		// caso terminale
@@ -101,7 +99,7 @@ public class Model {
 			parziale.add(rext);
 				
 			//fai un'altro step della ricorsione
-			doRicorsione2(parziale, N, parzialeArchi);
+			doRicorsione(parziale, N, parzialeArchi);
 				
 			//backtracking
 			parziale.remove(parziale.size()-1);
@@ -112,80 +110,21 @@ public class Model {
 	}
 	
 	
-//	public List<RetailersExt> calcolaRappresentativi(){
-//		this.retailersRappresentativi = new ArrayList<RetailersExt>();
-//		List<RetailersExt> rimanenti = new ArrayList<RetailersExt>();
-//		for (RetailersExt rext : this.grafo.vertexSet()) {
-//			if (rext.getVolume()>0) {
-//				rimanenti.add(rext);
-//			}
-//		}
-//		doRicorsione(new ArrayList<RetailersExt>(), rimanenti, new ArrayList<String>());
-//		Collections.sort(this.retailersRappresentativi);
-//		return this.retailersRappresentativi;
-//	}
-//	
-//	private void doRicorsione(List<RetailersExt> parziale, List<RetailersExt> rimanenti, List<String> parzialeTipi) {
-//		// caso terminale
-//		if (rimanenti.isEmpty()) {
-//			if (volumeRappresentativi(parziale) > volumeRappresentativi(this.retailersRappresentativi))
-//				this.retailersRappresentativi = new ArrayList<RetailersExt>(parziale);
-//			return;
-//		}
-//		
-//		// caso normale
-//		for (RetailersExt rext : rimanenti) {
-//			//aggiorna parziale
-//			parziale.add(rext);
-////			parzialeTipi.add(rext.getType());
-//			//aggiorna rimanenti
-//			List<RetailersExt> nuoviRimanenti = new ArrayList<RetailersExt>(rimanenti);
-//			nuoviRimanenti.removeAll(Graphs.neighborListOf(this.grafo, rext));
-//			nuoviRimanenti.remove(rext);
-////			List<RetailersExt> nuoviRimanenti2 =  new ArrayList<RetailersExt>(nuoviRimanenti);
-////			for (RetailersExt r : nuoviRimanenti) {
-////				if (parzialeTipi.contains(r.getType())) {
-////					nuoviRimanenti2.remove(r);
-////				}
-////			}
-//			//fai un'altro step della ricorsione
-//			doRicorsione(parziale, nuoviRimanenti, parzialeTipi);
-//			//backtracking
-//			parziale.remove(parziale.size()-1);
-////			parzialeTipi.remove(parzialeTipi.size()-1);
-//		}
-//		
-//	}
-	
-	
-	public int volumeRappresentativi(List<RetailersExt> retailers) {
-		int volume = 0;
-		for (RetailersExt rext : retailers) {
-			volume += rext.getVolume();
-		}
-		return volume;
-	}
-	
 	public List<RetailersExt> calcolaVolume(){
-		this.retailersRappresentativi = new ArrayList<RetailersExt>();
+		this.retailersConnessi = new ArrayList<RetailersExt>(); // tutti i retailers che hanno volume non nullo
 		for (RetailersExt ret : this.grafo.vertexSet()) {
 			int volume = 0;
 			Set<DefaultWeightedEdge> incoming = this.grafo.incomingEdgesOf(ret);
 			for (DefaultWeightedEdge edge : incoming) {
 				volume += this.grafo.getEdgeWeight(edge);
 			}
+			if(volume>0) {
+				this.retailersConnessi.add(ret);
+			}
 			ret.setVolume(volume);
 		}
 		List<RetailersExt> verticiVolume =  new ArrayList<RetailersExt>(this.grafo.vertexSet());
 		Collections.sort(verticiVolume);
-		for(RetailersExt R: verticiVolume) {
-			if(R.getVolume()>0) {
-				retailersRappresentativi.add(R);
-			} else {
-				break;
-			}
-		}
-		
 		return verticiVolume;
 	}
 	

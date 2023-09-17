@@ -12,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
 public class FXMLController {
 	
@@ -37,6 +38,9 @@ public class FXMLController {
 
     @FXML
     private ComboBox<String> cmbNazione;
+    
+    @FXML
+    private TextField txtN;
 
     @FXML
     private TextArea txtResult;
@@ -82,23 +86,28 @@ public class FXMLController {
     }
 
     @FXML
-    void doRicorsion(ActionEvent event) {
-//    	List<RetailersExt> rappresentativi = this.model.calcolaRappresentativi();
-//    	this.txtResult.appendText("\nIl volume totale dei retailer più rappresentativi è : " + this.model.volumeRappresentativi(rappresentativi) + "\n");
-//    	this.txtResult.appendText("I retailers più rappresentativi sono:\n");
-//    	for(RetailersExt rext : rappresentativi) {
-//    	this.txtResult.appendText(rext + "\n");
-//      }
-
-    	List<Arco> archi = this.model.calcolaCamminoChiuso(5);
+    void doRicorsione(ActionEvent event) {
+    	int N =0;
+    	try {
+    		N = Integer.parseInt(this.txtN.getText());
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("N deve essere un numero intero.");
+    		return;
+    	}
+    	if (N<2) {
+    		this.txtResult.setText("N deve essere almeno 2.");
+    		return;
+    	}
+    	
+    	List<Arco> archi = this.model.calcolaCamminoChiuso(N);
     	this.txtResult.appendText("\nIl peso del cammino è : " + this.model.getPesoCamminoChiuso() + "\n");
     	this.txtResult.appendText("Gli archi del cammino sono:\n");
     	for(Arco a : archi) {
     		this.txtResult.appendText(a + "\n");
     	}
-    	
     }
 
+    
     @FXML
     void initialize() {
         assert btnCreaGrafo != null : "fx:id=\"btnCreaGrafo\" was not injected: check your FXML file 'Scene.fxml'.";
@@ -106,6 +115,7 @@ public class FXMLController {
         assert btnVolumi != null : "fx:id=\"btnVolumi\" was not injected: check your FXML file 'Scene.fxml'.";
         assert cmbAnno != null : "fx:id=\"cmbAnno\" was not injected: check your FXML file 'Scene.fxml'.";
         assert cmbNazione != null : "fx:id=\"cmbNazione\" was not injected: check your FXML file 'Scene.fxml'.";
+        assert txtN != null : "fx:id=\"txtN\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'Scene.fxml'.";
         
         this.btnVolumi.setDisable(true);
