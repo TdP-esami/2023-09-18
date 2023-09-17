@@ -20,6 +20,9 @@ public class Model {
 	private SimpleWeightedGraph<RetailersExt,DefaultWeightedEdge> grafo;
 	private Map<Integer, RetailersExt> idMap;
 	private List<RetailersExt> retailersRappresentativi;
+	private List<RetailersExt> cammino;
+	private List<Arco> camminoArchi;
+	private int bestPesoCammino;
 	
 	public Model() {
 		this.dao = new GOsalesDAO();
@@ -36,41 +39,123 @@ public class Model {
 	}
 	
 	
-	public List<RetailersExt> calcolaRappresentativi(){
-		this.retailersRappresentativi = new ArrayList<RetailersExt>();
-		List<RetailersExt> rimanenti = new ArrayList<RetailersExt>();
-		for (RetailersExt rext : this.grafo.vertexSet()) {
-			if (rext.getVolume()>0) {
-				rimanenti.add(rext);
-			}
-		}
-		doRicorsione(new ArrayList<RetailersExt>(), rimanenti);
-		Collections.sort(this.retailersRappresentativi);
-		return this.retailersRappresentativi;
+	public int getPesoCamminoChiuso() {
+		return this.bestPesoCammino;
 	}
 	
-	private void doRicorsione(List<RetailersExt> parziale, List<RetailersExt> rimanenti) {
-		// caso terminale
-		if (rimanenti.isEmpty()) {
-			if (volumeRappresentativi(parziale) > volumeRappresentativi(this.retailersRappresentativi))
-				this.retailersRappresentativi = new ArrayList<RetailersExt>(parziale);
-		}
+	public List<Arco> calcolaCamminoChiuso(int N){
+		this.cammino = new ArrayList<RetailersExt>();
+		this.camminoArchi = new ArrayList<Arco>();
+		this.bestPesoCammino = 0;
 		
+		for (RetailersExt R : this.retailersRappresentativi) {
+			List<RetailersExt> parziale = new ArrayList<RetailersExt>();
+			parziale.add(R);
+			doRicorsione2(parziale, N, new ArrayList<Arco>());
+		}
+		return this.camminoArchi;
+	}
+	
+	private int calcolaPesoCammino(List<Arco> cammino) {
+		int res = 0;
+		for (Arco a : cammino) {
+			res += a.getPeso();
+		}
+		return res;
+	}
+	
+	private Arco arcoFromRetailers(RetailersExt R1, RetailersExt R2) {
+		DefaultWeightedEdge arco = this.grafo.getEdge(R1, R2);
+		if (arco==null) {
+			return null;
+		}else {
+			return new Arco(R1, R2, (int)this.grafo.getEdgeWeight(arco));
+		}
+	}
+	
+	private void doRicorsione2(List<RetailersExt> parziale, int N, List<Arco> parzialeArchi) {		
+		RetailersExt last = parziale.get(parziale.size()-1);
+		RetailersExt first = parziale.get(0);
+		// caso terminale
+		if (parzialeArchi.size()==(N-1)) {
+			if(this.grafo.getEdge(last, first)!=null) {
+				parzialeArchi.add(arcoFromRetailers(last, first));
+				parziale.add(first);
+				int pesoCammino = this.calcolaPesoCammino(parzialeArchi);
+				if (pesoCammino>this.bestPesoCammino) {
+					this.bestPesoCammino = pesoCammino;
+					this.cammino = new ArrayList<RetailersExt>(parziale);
+					this.camminoArchi = new ArrayList<Arco>(parzialeArchi);
+				}
+			}
+			return;
+		}
+
 		// caso normale
-		for (RetailersExt rext : rimanenti) {
+		List<RetailersExt> vicini = Graphs.neighborListOf(this.grafo, last);
+//		vicini.retainAll(this.retailersRappresentativi);
+		vicini.removeAll(parziale);
+		for (RetailersExt rext : vicini) {
 			//aggiorna parziale
+			parzialeArchi.add(arcoFromRetailers(last, rext));
 			parziale.add(rext);
-			//aggiorna rimanenti
-			List<RetailersExt> nuoviRimanenti = new ArrayList<RetailersExt>(rimanenti);
-			nuoviRimanenti.removeAll(Graphs.neighborListOf(this.grafo, rext));
-			nuoviRimanenti.remove(rext);
+				
 			//fai un'altro step della ricorsione
-			doRicorsione(parziale, nuoviRimanenti);
+			doRicorsione2(parziale, N, parzialeArchi);
+				
 			//backtracking
 			parziale.remove(parziale.size()-1);
+			parzialeArchi.remove(parzialeArchi.size()-1);
+			
 		}
 		
 	}
+	
+	
+//	public List<RetailersExt> calcolaRappresentativi(){
+//		this.retailersRappresentativi = new ArrayList<RetailersExt>();
+//		List<RetailersExt> rimanenti = new ArrayList<RetailersExt>();
+//		for (RetailersExt rext : this.grafo.vertexSet()) {
+//			if (rext.getVolume()>0) {
+//				rimanenti.add(rext);
+//			}
+//		}
+//		doRicorsione(new ArrayList<RetailersExt>(), rimanenti, new ArrayList<String>());
+//		Collections.sort(this.retailersRappresentativi);
+//		return this.retailersRappresentativi;
+//	}
+//	
+//	private void doRicorsione(List<RetailersExt> parziale, List<RetailersExt> rimanenti, List<String> parzialeTipi) {
+//		// caso terminale
+//		if (rimanenti.isEmpty()) {
+//			if (volumeRappresentativi(parziale) > volumeRappresentativi(this.retailersRappresentativi))
+//				this.retailersRappresentativi = new ArrayList<RetailersExt>(parziale);
+//			return;
+//		}
+//		
+//		// caso normale
+//		for (RetailersExt rext : rimanenti) {
+//			//aggiorna parziale
+//			parziale.add(rext);
+////			parzialeTipi.add(rext.getType());
+//			//aggiorna rimanenti
+//			List<RetailersExt> nuoviRimanenti = new ArrayList<RetailersExt>(rimanenti);
+//			nuoviRimanenti.removeAll(Graphs.neighborListOf(this.grafo, rext));
+//			nuoviRimanenti.remove(rext);
+////			List<RetailersExt> nuoviRimanenti2 =  new ArrayList<RetailersExt>(nuoviRimanenti);
+////			for (RetailersExt r : nuoviRimanenti) {
+////				if (parzialeTipi.contains(r.getType())) {
+////					nuoviRimanenti2.remove(r);
+////				}
+////			}
+//			//fai un'altro step della ricorsione
+//			doRicorsione(parziale, nuoviRimanenti, parzialeTipi);
+//			//backtracking
+//			parziale.remove(parziale.size()-1);
+////			parzialeTipi.remove(parzialeTipi.size()-1);
+//		}
+//		
+//	}
 	
 	
 	public int volumeRappresentativi(List<RetailersExt> retailers) {
@@ -82,6 +167,7 @@ public class Model {
 	}
 	
 	public List<RetailersExt> calcolaVolume(){
+		this.retailersRappresentativi = new ArrayList<RetailersExt>();
 		for (RetailersExt ret : this.grafo.vertexSet()) {
 			int volume = 0;
 			Set<DefaultWeightedEdge> incoming = this.grafo.incomingEdgesOf(ret);
@@ -92,6 +178,14 @@ public class Model {
 		}
 		List<RetailersExt> verticiVolume =  new ArrayList<RetailersExt>(this.grafo.vertexSet());
 		Collections.sort(verticiVolume);
+		for(RetailersExt R: verticiVolume) {
+			if(R.getVolume()>0) {
+				retailersRappresentativi.add(R);
+			} else {
+				break;
+			}
+		}
+		
 		return verticiVolume;
 	}
 	

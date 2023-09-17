@@ -83,12 +83,20 @@ public class FXMLController {
 
     @FXML
     void doRicorsion(ActionEvent event) {
-    	List<RetailersExt> rappresentativi = this.model.calcolaRappresentativi();
-    	this.txtResult.appendText("\nIl volume totale dei retailer più rappresentativi è : " + this.model.volumeRappresentativi(rappresentativi) + "\n");
-    	this.txtResult.appendText("I retailers più rappresentativi sono:\n");
-    	for(RetailersExt rext : rappresentativi) {
-    		this.txtResult.appendText(rext + "\n");
+//    	List<RetailersExt> rappresentativi = this.model.calcolaRappresentativi();
+//    	this.txtResult.appendText("\nIl volume totale dei retailer più rappresentativi è : " + this.model.volumeRappresentativi(rappresentativi) + "\n");
+//    	this.txtResult.appendText("I retailers più rappresentativi sono:\n");
+//    	for(RetailersExt rext : rappresentativi) {
+//    	this.txtResult.appendText(rext + "\n");
+//      }
+
+    	List<Arco> archi = this.model.calcolaCamminoChiuso(5);
+    	this.txtResult.appendText("\nIl peso del cammino è : " + this.model.getPesoCamminoChiuso() + "\n");
+    	this.txtResult.appendText("Gli archi del cammino sono:\n");
+    	for(Arco a : archi) {
+    		this.txtResult.appendText(a + "\n");
     	}
+    	
     }
 
     @FXML
